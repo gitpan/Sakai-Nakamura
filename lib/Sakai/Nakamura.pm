@@ -4,6 +4,8 @@ package Sakai::Nakamura;
 use 5.008008;
 use strict;
 use warnings;
+use Carp;
+use base qw(Apache::Sling);
 
 require Exporter;
 
@@ -11,10 +13,17 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
+#{{{sub new
+sub new {
+    my ( $class, @args ) = @_;
+    my $authn = $class->SUPER::new(@args);
+    bless $authn, $class;
+    return $authn;
+}
 
-# Preloaded methods go here.
+#}}}
 
 1;
 __END__
@@ -46,7 +55,7 @@ D. D. Parry, E<lt>perl@ddp.me.ukE<gt>
 
 =head1 VERSION
 
-0.03
+0.04
 
 =head1 LICENSE AND COPYRIGHT
 
