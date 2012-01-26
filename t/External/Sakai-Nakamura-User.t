@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 27;
+use Test::More tests => 28;
 
 my $sling_host = 'http://localhost:8080';
 my $super_user = 'admin';
@@ -56,12 +56,15 @@ ok( $user->add( $test_user, $test_pass, \@test_properties ),
 ok( $user->check_exists( $test_user ),
     "User Test: User \"$test_user\" exists." );
 
+# check me service:
+ok( $user->me(), "" );
+
 # Check can update properties:
 @test_properties = ( "user_test_editor=$super_user" );
 ok( $user->update( $test_user, \@test_properties ),
     "User Test: User \"$test_user\" updated successfully." );
 
-# Check can update properties after addition pf user to group:
+# Check can update properties after addition of user to group:
 # http://jira.sakaiproject.org/browse/KERN-270
 # create group:
 ok( $group->add( $test_group, \@test_properties ),
