@@ -15,7 +15,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 #{{{sub new
 
@@ -27,7 +27,6 @@ sub new {
 }
 
 #}}}
-
 
 #{{{sub role_member_add
 sub role_member_add {
@@ -94,6 +93,26 @@ group related functionality for Sling implemented over rest APIs.
 
 Create, set up, and return a Group Object.
 
+=head2 role_member_add
+
+Add a member to a role in a group.
+
+=head2 role_member_add_from_file
+
+Add members to roles in groups as specified in a file.
+
+=head2 role_member_delete
+
+Delete a member from a role in a group.
+
+=head2 role_member_exists
+
+Check whether a member exists in a role in a group.
+
+=head2 role_member_view
+
+View the members in a given role in a group.
+
 =head1 USAGE
 
 use Sakai::Nakamura::Group;
@@ -151,4 +170,4 @@ Daniel David Parry <perl@ddp.me.uk>
 
 LICENSE: http://dev.perl.org/licenses/artistic.html
 
-COPYRIGHT: (c) 2011 Daniel David Parry <perl@ddp.me.uk>
+COPYRIGHT: (c) 2012 Daniel David Parry <perl@ddp.me.uk>

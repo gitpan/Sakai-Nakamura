@@ -13,7 +13,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 #{{{sub role_member_add_setup
 
@@ -59,19 +59,14 @@ group related actions in the system.
 
 =head1 METHODS
 
-=head2 add_setup
+=head2 role_member_add_setup
 
-Returns a textual representation of the request needed to add the group to the
-system.
+Returns a textual representation of the request needed to add a member to a
+role in a group in the system.
 
-=head2 member_add_setup
+=head2 role_member_add_eval
 
-Returns a textual representation of the request needed to add add a member to a
-group in the system.
-
-=head2 member_add_eval
-
-Check result of adding a member to a group in the system.
+Check result of adding a member to a role in a group in the system.
 
 =head1 USAGE
 
@@ -124,4 +119,4 @@ Daniel David Parry <perl@ddp.me.uk>
 
 LICENSE: http://dev.perl.org/licenses/artistic.html
 
-COPYRIGHT: (c) 2011 Daniel David Parry <perl@ddp.me.uk>
+COPYRIGHT: (c) 2012 Daniel David Parry <perl@ddp.me.uk>
