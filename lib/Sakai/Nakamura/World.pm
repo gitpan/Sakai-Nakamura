@@ -14,7 +14,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 #{{{sub new
 
@@ -68,6 +68,8 @@ sub add {
 #{{{sub add_from_file
 sub add_from_file {
     my ( $world, $file, $fork_id, $number_of_forks ) = @_;
+    $fork_id = defined $fork_id ? $fork_id : 0;
+    $number_of_forks = defined $number_of_forks ? $number_of_forks : 1;
     my $csv               = Text::CSV->new();
     my $count             = 0;
     my $number_of_columns = 0;
@@ -80,7 +82,7 @@ sub add_from_file {
                 if ( $csv->parse($_) ) {
                     @column_headings = $csv->fields();
 
-                    # First field must be world:
+                    # First field must be id:
                     if ( $column_headings[0] !~ /^[Ii][Dd]$/msx ) {
                         croak
 'First CSV column must be the world ID, column heading must be "id". Found: "'
@@ -111,7 +113,7 @@ sub add_from_file {
                     my $visibility;
                     my $joinability;
                     my $world_template;
-                    for ( my $i = 2 ; $i < $number_of_columns ; $i++ ) {
+                    for ( my $i = 1 ; $i < $number_of_columns ; $i++ ) {
                         my $heading = $column_headings[$i];
                         if ( $heading =~ /^[Tt][Ii][Tt][Ll][Ee]$/msx ) {
                             $title = $columns[$i];
@@ -132,7 +134,7 @@ sub add_from_file {
                             $world_template = $columns[$i];
                         }
                         else {
-                           croak "Unsupported column heading \"$heading\" - please use: \"id\", \"title\", \"description\", \"tags\", \"visibility\", \"joinability\", \"world_template\"";
+                           croak "Unsupported column heading \"$heading\" - please use: \"id\", \"title\", \"description\", \"tags\", \"visibility\", \"joinability\", \"worldtemplate\"";
                         }
                     }
                     $world->add( $id, $title, $description, $tags, $visibility, $joinability, $world_template );

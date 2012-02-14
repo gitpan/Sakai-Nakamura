@@ -5,7 +5,8 @@
 
 # change 'tests => 1' to 'tests => last_test_to_print';
 
-use Test::More tests => 12;
+use Test::More tests => 19;
+use Test::Exception;
 BEGIN { use_ok( 'Sakai::Nakamura' ); }
 BEGIN { use_ok( 'Sakai::Nakamura::Authn' ); }
 BEGIN { use_ok( 'Sakai::Nakamura::Content' ); }
@@ -22,6 +23,8 @@ $nakamura->{'Verbose'} = 1;
 $nakamura->{'Log'} = 'log.txt';
 
 my $authn   = new Sakai::Nakamura::Authn(\$nakamura);
+throws_ok { my $content = new Sakai::Nakamura::Content() } qr/no authn provided!/, 'Check new function croaks without authn';
+
 my $content = new Sakai::Nakamura::Content(\$authn,'1','log.txt');
 ok( $content->{ 'BaseURL' } eq 'http://localhost:8080', 'Check BaseURL set' );
 ok( $content->{ 'Log' }     eq 'log.txt',               'Check Log set' );
@@ -33,3 +36,12 @@ ok( defined $content->{ 'Response' },                   'Check response defined'
 $content->set_results( 'Test Message', undef );
 ok( $content->{ 'Message' } eq 'Test Message', 'Message now set' );
 ok( ! defined $content->{ 'Response' },          'Check response no longer defined' );
+
+throws_ok { $content->upload_file() } qr/No local file to upload defined!/, 'Check upload_file croaks without local file';
+throws_ok { $content->upload_from_file() } qr/File to upload from not defined/, 'Check upload_from_file function croaks without file specified';
+ok( $content->upload_from_file('/dev/null'), 'Check upload_from_file function with blank file' );
+
+my $file = "\n";
+throws_ok { $content->upload_from_file() } qr/File to upload from not defined/, 'Check upload_from_file function croaks without file';
+throws_ok { $content->upload_from_file(\$file) } qr/Problem parsing content to add: ''/, 'Check upload_from_file function croaks with blank file';
+throws_ok { $content->upload_from_file('/tmp/__non__--__tnetsixe__') } qr{Problem opening file: '/tmp/__non__--__tnetsixe__'}, 'Check upload_from_file function croaks with non-existent file specified';
