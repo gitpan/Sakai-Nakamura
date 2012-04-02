@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Test::Exception;
-use Test::More tests => 23;
+use Test::More tests => 24;
 
 my $sling_host = 'http://localhost:8080';
 my $super_user = 'admin';
@@ -23,6 +23,8 @@ my $test_user = "user_test_user_$$";
 my $test_pass = "pass";
 # test group name:
 my $test_group = "g-user_test_group_$$";
+# test email:
+my @test_properties = ( "email=test\@example.com" );
 
 # sling object:
 my $sling = Sakai::Nakamura->new();
@@ -35,6 +37,7 @@ $sling->{'Log'}     = $log;
 # authn object:
 my $authn = Sakai::Nakamura::Authn->new( \$sling );
 isa_ok $authn, 'Sakai::Nakamura::Authn', 'authentication';
+ok( $authn->login_user(), "Log in successful" );
 # group object:
 my $group = Sakai::Nakamura::Group->new( \$authn, $verbose, $log );
 isa_ok $group, 'Sakai::Nakamura::Group', 'group';
@@ -48,7 +51,7 @@ ok( defined $user,
     "Group Test: Sling User Object successfully created." );
 
 # add user:
-ok( $user->add( $test_user, $test_pass ),
+ok( $user->add( $test_user, $test_pass. \@test_properties ),
     "Group Test: User \"$test_user\" added successfully." );
 
 # Check can update properties after addition of user to group:
@@ -71,9 +74,7 @@ ok( $group->role_member_view(),
 throws_ok { $group->role_member_add() } qr{No group name defined to add to!}, 'Check role_member_add function croaks with no values specified';
 ok( $group->role_member_add( $test_group, 'manager', $test_user ),
     "Test role_member_add function completes successfully." );
-# TODO: investigate why this returns success status:
-ok( $group->role_member_add( '__bad__group__', '__bad__role__', '__bad__user__' ),
-    "Test role_member_add function with non-existent group and role." );
+throws_ok { $group->role_member_add( '__bad__group__', '__bad__role__', '__bad__user__'); } qr{}, "Test role_member_add function with non-existent group and role.";
 
 # Cleanup Group:
 ok( $group->del( $test_group ),

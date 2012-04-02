@@ -15,18 +15,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.10';
-
-#{{{sub new
-
-sub new {
-    my ( $class, @args ) = @_;
-    my $user = $class->SUPER::new(@args);
-    bless $user, $class;
-    return $user;
-}
-
-#}}}
+our $VERSION = '0.11';
 
 #{{{sub me
 sub me {

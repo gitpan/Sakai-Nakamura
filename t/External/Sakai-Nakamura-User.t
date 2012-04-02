@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 30;
+use Test::More tests => 31;
 
 my $sling_host = 'http://localhost:8080';
 my $super_user = 'admin';
@@ -21,7 +21,7 @@ my $test_user = "user_test_user_$$";
 # test user pass:
 my $test_pass = "pass";
 # test properties:
-my @test_properties;
+my @test_properties = ( "email=test\@example.com" );
 
 # test group name:
 my $test_group = "g-user_test_group_$$";
@@ -37,6 +37,7 @@ $sling->{'Log'}     = $log;
 # authn object:
 my $authn = Sakai::Nakamura::Authn->new( \$sling );
 isa_ok $authn, 'Sakai::Nakamura::Authn', 'authentication';
+ok( $authn->login_user(), "Log in successful" );
 # user object:
 my $user = Sakai::Nakamura::User->new( \$authn, $verbose, $log );
 isa_ok $user, 'Sakai::Nakamura::User', 'user';

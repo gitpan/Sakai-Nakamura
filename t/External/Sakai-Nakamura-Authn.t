@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 34;
+use Test::More tests => 35;
 use Test::Exception;
 
 my $sling_host = 'http://localhost:8080';
@@ -16,9 +16,10 @@ BEGIN { use_ok( 'Sakai::Nakamura' ); }
 BEGIN { use_ok( 'Sakai::Nakamura::Authn' ); }
 BEGIN { use_ok( 'Sakai::Nakamura::User' ); }
 
-# test user name and pass:
+# test user name, pass and email:
 my $test_user = "user_test_user_$$";
 my $test_pass = "pass";
+my @test_properties = ( "email=test\@example.com" );
 
 # sling object:
 my $sling = Sakai::Nakamura->new();
@@ -29,6 +30,7 @@ $sling->{'Log'}     = $log;
 # authn object:
 my $authn = Sakai::Nakamura::Authn->new( \$sling );
 isa_ok $authn, 'Sakai::Nakamura::Authn', 'authentication';
+ok( $authn->login_user(), "Log in successful" );
 # user object:
 my $user = Sakai::Nakamura::User->new( \$authn, $verbose, $log );
 isa_ok $user, 'Sakai::Nakamura::User', 'user';
@@ -37,16 +39,16 @@ isa_ok $user, 'Sakai::Nakamura::User', 'user';
 $authn->{'Username'}    = $super_user;
 $authn->{'Password'}    = '__bad__password__';
 
-# Test basic login fail:
-throws_ok { $authn->login_user() } qr{Basic Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (basic) croaks with invalid password';
-$authn->{'Verbose'} = '1';
-throws_ok { $authn->login_user() } qr{Basic Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (basic) croaks with invalid password';
-
 # Test form login fail:
-$authn->{'Type'} = 'form';
 throws_ok { $authn->login_user() } qr{Form Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (form) croaks with invalid password';
 $authn->{'Verbose'} = '0';
 throws_ok { $authn->login_user() } qr{Form Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (form) croaks with invalid password';
+
+# Test basic login fail:
+$authn->{'Type'} = 'basic';
+throws_ok { $authn->login_user() } qr{Basic Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (basic) croaks with invalid password';
+$authn->{'Verbose'} = '1';
+throws_ok { $authn->login_user() } qr{Basic Auth log in for user "admin" at URL "http://localhost:8080" was unsuccessful}, 'Check login_user function (basic) croaks with invalid password';
 
 # Test unsupported login type:
 $authn->{'Type'} = '__bad__type__';
@@ -73,7 +75,7 @@ $authn->{'Verbose'} = '2';
 ok( $authn->form_login(), 'Check form_login function works successfully' );
 
 $authn->{'Verbose'} = '0';
-ok( $user->add( $test_user, $test_pass ),
+ok( $user->add( $test_user, $test_pass, \@test_properties ),
     "Authn Test: User \"$test_user\" added successfully." );
 ok( $user->check_exists( $test_user ),
     "Authn Test: User \"$test_user\" exists." );
