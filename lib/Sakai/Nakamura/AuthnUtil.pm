@@ -13,7 +13,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 #{{{sub form_login_setup
 sub form_login_setup {
@@ -45,8 +45,7 @@ sub form_login_eval {
 sub form_logout_setup {
     my ($base_url) = @_;
     if ( !defined $base_url ) { croak 'No base url defined!'; }
-    my $post_variables = q{$post_variables = ['sakaiauth:logout','1']};
-    return "post $base_url/system/sling/formlogin $post_variables";
+    return "get $base_url/system/sling/logout?resource=/index";
 }
 
 #}}}

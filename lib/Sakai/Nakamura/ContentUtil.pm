@@ -13,12 +13,13 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 #{{{sub add_file_metadata_setup
 
 sub add_file_metadata_setup {
-    my ( $base_url, $content_path, $content_filename, $content_fileextension ) = @_;
+    my ( $base_url, $content_path, $content_filename, $content_fileextension ) =
+      @_;
     if ( !defined $base_url ) { croak 'No base url defined to add against!'; }
     if ( !defined $content_path ) {
         croak 'No content path to add file meta data to!';
@@ -27,12 +28,12 @@ sub add_file_metadata_setup {
         croak 'No content filename provided when attempting to add meta data!';
     }
     if ( !defined $content_fileextension ) {
-        croak 'No content file extension provided when attempting to add meta data!';
+        croak
+'No content file extension provided when attempting to add meta data!';
     }
     my $post_variables =
-      "\$post_variables = ['requests','[{\"url\":\"$content_path\",\"method\":\"POST\",\"parameters\":{\"sakai:pooled-content-file-name\":\"$content_filename\",\"sakai:description\":\"\",\"sakai:permissions\":\"public\",\"sakai:copyright\":\"creativecommons\",\"sakai:allowcomments\":\"true\",\"sakai:showcomments\":\"true\",\"sakai:fileextension\":\"$content_fileextension\",\"_charset_\":\"utf-8\"},\"_charset_\":\"utf-8\"},{\"url\":\"$content_path.save.json\",\"method\":\"POST\",\"_charset_\":\"utf-8\"}]']";
-    return
-"post $base_url/system/batch $post_variables";
+"\$post_variables = ['requests','[{\"url\":\"$content_path\",\"method\":\"POST\",\"parameters\":{\"sakai:pooled-content-file-name\":\"$content_filename\",\"sakai:description\":\"\",\"sakai:permissions\":\"public\",\"sakai:copyright\":\"creativecommons\",\"sakai:allowcomments\":\"true\",\"sakai:showcomments\":\"true\",\"sakai:fileextension\":\"$content_fileextension\",\"_charset_\":\"utf-8\"},\"_charset_\":\"utf-8\"},{\"url\":\"$content_path.save.json\",\"method\":\"POST\",\"_charset_\":\"utf-8\"}]']";
+    return "post $base_url/system/batch $post_variables";
 }
 
 #}}}
@@ -55,9 +56,8 @@ sub add_file_perms_setup {
         croak 'No content path to add file perms to!';
     }
     my $post_variables =
-      "\$post_variables = ['requests','[{\"url\":\"$content_path.members.html\",\"method\":\"POST\",\"parameters\":{\":viewer\":[\"everyone\",\"anonymous\"]}},{\"url\":\"$content_path.modifyAce.html\",\"method\":\"POST\",\"parameters\":{\"principalId\":[\"everyone\"],\"privilege\@jcr:read\":\"granted\"}},{\"url\":\"$content_path.modifyAce.html\",\"method\":\"POST\",\"parameters\":{\"principalId\":[\"anonymous\"],\"privilege\@jcr:read\":\"granted\"}}]']";
-    return
-"post $base_url/system/batch $post_variables";
+"\$post_variables = ['requests','[{\"url\":\"$content_path.members.html\",\"method\":\"POST\",\"parameters\":{\":viewer\":[\"everyone\",\"anonymous\"]}},{\"url\":\"$content_path.modifyAce.html\",\"method\":\"POST\",\"parameters\":{\"principalId\":[\"everyone\"],\"privilege\@jcr:read\":\"granted\"}},{\"url\":\"$content_path.modifyAce.html\",\"method\":\"POST\",\"parameters\":{\"principalId\":[\"anonymous\"],\"privilege\@jcr:read\":\"granted\"}}]']";
+    return "post $base_url/system/batch $post_variables";
 }
 
 #}}}
@@ -67,6 +67,32 @@ sub add_file_perms_setup {
 sub add_file_perms_eval {
     my ($res) = @_;
     return ( ${$res}->code eq '200' );
+}
+
+#}}}
+
+#{{{sub comment_add_setup
+
+sub comment_add_setup {
+    my ( $base_url, $content_path, $comment ) = @_;
+    if ( !defined $base_url ) { croak 'No base url defined to add against!'; }
+    if ( !defined $content_path ) {
+        croak 'No content path to add comments to!';
+    }
+    if ( !defined $comment ) {
+        croak 'No comment provided to add!';
+    }
+    my $post_variables = "\$post_variables = ['comment','$comment']";
+    return "post $base_url/$content_path.comments $post_variables";
+}
+
+#}}}
+
+#{{{sub comment_add_eval
+
+sub comment_add_eval {
+    my ($res) = @_;
+    return ( ${$res}->code eq '201' );
 }
 
 #}}}

@@ -1,13 +1,12 @@
 #!/usr/bin/perl -w
 
-package Sakai::Nakamura::Authz;
+package Sakai::Nakamura::JsonQueryServlet;
 
 use 5.008008;
 use strict;
 use warnings;
 use Carp;
-
-use base qw(Apache::Sling::Authz);
+use base qw(Apache::Sling::JsonQueryServlet);
 
 require Exporter;
 
@@ -23,23 +22,19 @@ __END__
 
 =head1 NAME
 
-Sakai::Nakamura::Authz - Manipulate Authz in a Sakai Nakamura instance.
+Sakai::Nakamura::JsonQueryServlet - Manipulate the JSON query servlet in a Sakai Nakamura instance.
 
 =head1 ABSTRACT
 
-authz related functionality for Sling implemented over rest APIs.
-
-=head1 METHODS
-
-=head2 new
-
-Create, set up, and return an Authz object.
+json query servlet related functionality for nakamura implemented over rest APIs.
 
 =head1 USAGE
 
+use Sakai::Nakamura::JsonQueryServlet;
+
 =head1 DESCRIPTION
 
-Perl library providing a layer of abstraction to the REST authz methods
+Perl library providing a layer of abstraction to the REST json query servlet methods
 
 =head1 REQUIRED ARGUMENTS
 

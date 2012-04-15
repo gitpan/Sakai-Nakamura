@@ -7,6 +7,8 @@ use strict;
 use warnings;
 use Carp;
 use base qw(Apache::Sling::User);
+use Sakai::Nakamura;
+use Sakai::Nakamura::Authn;
 use Sakai::Nakamura::UserUtil;
 
 require Exporter;
@@ -15,7 +17,45 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
+
+#{{{sub check_exists
+sub check_exists {
+    my ( $user, $act_on_user ) = @_;
+    my $res = Apache::Sling::Request::request(
+        \$user,
+        Sakai::Nakamura::UserUtil::exists_setup(
+            $user->{'BaseURL'}, $act_on_user
+        )
+    );
+    my $success = Sakai::Nakamura::UserUtil::exists_eval($res);
+    my $message = "User \"$act_on_user\" ";
+    $message .= ( $success ? 'exists!' : 'does not exist!' );
+    $user->set_results( "$message", $res );
+    return $success;
+}
+
+#}}}
+
+#{{{sub config
+
+sub config {
+    my ($class) = @_;
+    my $me;
+    my $profile_field;
+    my $profile_section;
+    my $profile_update;
+    my $profile_value;
+    my $user_config = $class->SUPER::config();
+    $user_config->{'me'}              = \$me;
+    $user_config->{'profile-field'}   = \$profile_field;
+    $user_config->{'profile-section'} = \$profile_section;
+    $user_config->{'profile-update'}  = \$profile_update;
+    $user_config->{'profile-value'}   = \$profile_value;
+    return $user_config;
+}
+
+#}}}
 
 #{{{sub me
 sub me {
@@ -57,6 +97,53 @@ sub profile_update {
 
 #}}}
 
+#{{{sub run
+sub run {
+    my ( $user, $nakamura, $config ) = @_;
+    if ( !defined $config ) {
+        croak 'No user config supplied!';
+    }
+    my $authn =
+      defined $nakamura->{'Authn'}
+      ? ${ $nakamura->{'Authn'} }
+      : new Sakai::Nakamura::Authn( \$nakamura );
+
+    my $success = 1;
+
+    if ( defined ${ $config->{'exists'} } ) {
+        $authn->login_user();
+        my $user = new Sakai::Nakamura::User( \$authn, $nakamura->{'Verbose'},
+            $nakamura->{'Log'} );
+        $success = $user->check_exists( ${ $config->{'exists'} } );
+        Apache::Sling::Print::print_result($user);
+    }
+    elsif ( defined ${ $config->{'me'} } ) {
+        $authn->login_user();
+        my $user = new Sakai::Nakamura::User( \$authn, $nakamura->{'Verbose'},
+            $nakamura->{'Log'} );
+        $success = $user->me();
+        Apache::Sling::Print::print_result($user);
+    }
+    elsif ( defined ${ $config->{'profile-update'} } ) {
+        $authn->login_user();
+        my $user = new Sakai::Nakamura::User( \$authn, $nakamura->{'Verbose'},
+            $nakamura->{'Log'} );
+        $success = $user->profile_update(
+            ${ $config->{'profile-field'} },
+            ${ $config->{'profile-value'} },
+            ${ $config->{'profile-update'} },
+            ${ $config->{'profile-section'} }
+        );
+        Apache::Sling::Print::print_result($user);
+    }
+    else {
+        $success = $user->SUPER::run( $nakamura, $config );
+    }
+    return $success;
+}
+
+#}}}
+
 1;
 
 __END__
@@ -71,9 +158,9 @@ user related functionality for Sling implemented over rest APIs.
 
 =head1 METHODS
 
-=head2 new
+=head2 check_exists
 
-Create, set up, and return a User Agent.
+Check whether the user exists
 
 =head2 me
 

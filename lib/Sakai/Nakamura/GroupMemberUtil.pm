@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-package Sakai::Nakamura::GroupUtil;
+package Sakai::Nakamura::GroupMemberUtil;
 
 use 5.008001;
 use strict;
@@ -13,11 +13,11 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
-#{{{sub role_member_add_setup
+#{{{sub add_setup
 
-sub role_member_add_setup {
+sub add_setup {
     my ( $base_url, $act_on_group, $act_on_role, $add_member ) = @_;
     if ( !defined $base_url ) { croak 'No base url defined to add against!'; }
     if ( !defined $act_on_group ) {
@@ -35,9 +35,9 @@ sub role_member_add_setup {
 
 #}}}
 
-#{{{sub role_member_add_eval
+#{{{sub add_eval
 
-sub role_member_add_eval {
+sub add_eval {
     my ($res) = @_;
     return ( ${$res}->code eq '200' );
 }
@@ -50,7 +50,7 @@ __END__
 
 =head1 NAME
 
-Sakai::Nakamura::GroupUtil Methods to generate and check HTTP requests required for manipulating groups.
+Sakai::Nakamura::GroupMemberUtil Methods to generate and check HTTP requests required for manipulating groups.
 
 =head1 ABSTRACT
 
@@ -59,22 +59,22 @@ group related actions in the system.
 
 =head1 METHODS
 
-=head2 role_member_add_setup
+=head2 add_setup
 
 Returns a textual representation of the request needed to add a member to a
 role in a group in the system.
 
-=head2 role_member_add_eval
+=head2 add_eval
 
 Check result of adding a member to a role in a group in the system.
 
 =head1 USAGE
 
-use Sakai::Nakamura::GroupUtil;
+use Sakai::Nakamura::GroupMemberUtil;
 
 =head1 DESCRIPTION
 
-GroupUtil perl library essentially provides the request strings needed to
+GroupMemberUtil perl library essentially provides the request strings needed to
 interact with group functionality exposed over the system rest interfaces.
 
 Each interaction has a setup and eval method. setup provides the request,
