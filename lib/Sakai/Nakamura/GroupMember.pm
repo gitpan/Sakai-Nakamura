@@ -8,6 +8,7 @@ use warnings;
 use Carp;
 use Getopt::Long qw(:config bundling);
 use Sakai::Nakamura;
+use Sakai::Nakamura::Authn;
 use Sakai::Nakamura::GroupMemberUtil;
 
 require Exporter;
@@ -16,7 +17,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 #{{{sub new
 
@@ -70,6 +71,7 @@ sub add {
 
 #{{{sub add_from_file
 sub add_from_file {
+
     # TODO implement
     return 1;
 }
@@ -78,39 +80,44 @@ sub add_from_file {
 
 #{{{sub check_exists
 sub check_exists {
+
     # TODO implement
     return 1;
 }
 
 #}}}
 
-#{{{sub command_line
+#{{{ sub command_line
 sub command_line {
-    my ( $group_member, @ARGV ) = @_;
-
-    # options parsing
+    my ( $class, @ARGV ) = @_;
     my $nakamura = Sakai::Nakamura->new;
-    my $config   = config($nakamura);
-
-    GetOptions(
-    $config
-    ) or $group_member->help();
-
-    if ( $nakamura->{'Help'} ) { $group_member->help(); }
-    if ( $nakamura->{'Man'} )  { $group_member->man(); }
-
-    $group_member->run( $nakamura, $config );
-    return 1;
+    my $config   = $class->config( $nakamura, @ARGV );
+    my $authn    = new Sakai::Nakamura::Authn( \$nakamura );
+    return $class->run( $nakamura, $config );
 }
 
 #}}}
 
 #{{{sub config
+# TODO add config options:
 
 sub config {
-    my ($class) = @_;
-    my %group_member_config = (
-    );
+    my ( $class, $nakamura, @ARGV ) = @_;
+    my $group_member_config = $class->config_hash( $nakamura, @ARGV );
+
+    GetOptions( $group_member_config ) or $class->help();
+
+    return $group_member_config;
+}
+
+#}}}
+
+#{{{sub config_hash
+# TODO add config options:
+
+sub config_hash {
+    my ( $class, $nakamura, @ARGV ) = @_;
+    my %group_member_config = ();
 
     return \%group_member_config;
 }
@@ -119,6 +126,7 @@ sub config {
 
 #{{{sub del
 sub del {
+
     # TODO implement
     return 1;
 }
@@ -127,7 +135,8 @@ sub del {
 
 #{{{ sub help
 sub help {
-# TODO: implement
+
+    # TODO: implement
 
     print <<"EOF";
 Usage: perl $0 [-OPTIONS [-MORE_OPTIONS]] [--] [PROGRAM_ARG1 ...]
@@ -145,7 +154,8 @@ EOF
 
 #{{{ sub man
 sub man {
-# TODO: implement
+
+    # TODO: implement
     my ($group_member) = @_;
 
     print <<'EOF';
@@ -184,6 +194,9 @@ sub run {
 
     my $success = 1;
 
+    if    ( $nakamura->{'Help'} ) { $group_member->help(); }
+    elsif ( $nakamura->{'Man'} )  { $group_member->man(); }
+
     # TODO: implement
 
     return $success;
@@ -193,6 +206,7 @@ sub run {
 
 #{{{sub view
 sub view {
+
     # TODO implement
     return 1;
 }

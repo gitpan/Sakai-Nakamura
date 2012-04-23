@@ -9,6 +9,7 @@ use Carp;
 use Getopt::Long qw(:config bundling);
 use Text::CSV;
 use Sakai::Nakamura;
+use Sakai::Nakamura::Authn;
 use Sakai::Nakamura::WorldUtil;
 
 require Exporter;
@@ -17,7 +18,7 @@ use base qw(Exporter);
 
 our @EXPORT_OK = ();
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 #{{{sub new
 
@@ -179,16 +180,25 @@ sub add_from_file {
 
 #}}}
 
-#{{{sub command_line
+#{{{ sub command_line
 sub command_line {
-    my ( $world, @ARGV ) = @_;
-
-    # options parsing
+    my ( $class, @ARGV ) = @_;
     my $nakamura = Sakai::Nakamura->new;
-    my $config   = config($nakamura);
+    my $config   = $class->config( $nakamura, @ARGV );
+    my $authn    = new Sakai::Nakamura::Authn( \$nakamura );
+    return $class->run( $nakamura, $config );
+}
+
+#}}}
+
+#{{{sub config
+
+sub config {
+    my ( $class, $nakamura, @ARGV ) = @_;
+    my $world_config = $class->config_hash( $nakamura, @ARGV );
 
     GetOptions(
-        $config,              'auth=s',
+        $world_config,        'auth=s',
         'help|?',             'log|L=s',
         'man|M',              'pass|p=s',
         'threads|t=s',        'url|U=s',
@@ -202,21 +212,17 @@ sub command_line {
         'view|V',             'view-copyright=s',
         'view-description=s', 'view-tags=s',
         'view-title=s',       'view-visibility=s'
-    ) or $world->help();
+    ) or $class->help();
 
-    if ( $nakamura->{'Help'} ) { $world->help(); }
-    if ( $nakamura->{'Man'} )  { $world->man(); }
-
-    $world->run( $nakamura, $config );
-    return 1;
+    return $world_config;
 }
 
 #}}}
 
-#{{{sub config
+#{{{sub config_hash
 
-sub config {
-    my ($class) = @_;
+sub config_hash {
+    my ( $class, $nakamura, @ARGV ) = @_;
     my $add;
     my $additions;
     my $id;
@@ -227,15 +233,15 @@ sub config {
     my $joinability;
     my $world_template;
     my %world_config = (
-        'auth'           => \$class->{'Auth'},
-        'help'           => \$class->{'Help'},
-        'log'            => \$class->{'Log'},
-        'man'            => \$class->{'Man'},
-        'pass'           => \$class->{'Pass'},
-        'threads'        => \$class->{'Threads'},
-        'url'            => \$class->{'URL'},
-        'user'           => \$class->{'User'},
-        'verbose'        => \$class->{'Verbose'},
+        'auth'           => \$nakamura->{'Auth'},
+        'help'           => \$nakamura->{'Help'},
+        'log'            => \$nakamura->{'Log'},
+        'man'            => \$nakamura->{'Man'},
+        'pass'           => \$nakamura->{'Pass'},
+        'threads'        => \$nakamura->{'Threads'},
+        'url'            => \$nakamura->{'URL'},
+        'user'           => \$nakamura->{'User'},
+        'verbose'        => \$nakamura->{'Verbose'},
         'add'            => \$add,
         'additions'      => \$additions,
         'title'          => \$title,
@@ -259,7 +265,7 @@ Usage: perl $0 [-OPTIONS [-MORE_OPTIONS]] [--] [PROGRAM_ARG1 ...]
 The following options are accepted:
 
  --add or -a (worldid)               - add specified world.
- --additions or -A (file)            - file containing list of users to be added.
+ --additions or -A (file)            - file containing list of worlds to be added.
  --auth (type)                       - Specify auth type. If ommitted, default is used.
  --description or -d                 - description of world
  --help or -?                        - view the script synopsis and options.
@@ -327,7 +333,9 @@ sub run {
 
     my $success = 1;
 
-    if ( defined ${ $config->{'additions'} } ) {
+    if    ( $nakamura->{'Help'} ) { $world->help(); }
+    elsif ( $nakamura->{'Man'} )  { $world->man(); }
+    elsif ( defined ${ $config->{'additions'} } ) {
         my $message =
           "Adding worlds from file \"" . ${ $config->{'additions'} } . "\":\n";
         Apache::Sling::Print::print_with_lock( "$message", $nakamura->{'Log'} );
@@ -340,10 +348,10 @@ sub run {
                     # ensure cookie stores are separate, then log the user in:
                 $authn->{'LWP'} = $authn->user_agent( $nakamura->{'Referer'} );
                 $authn->login_user();
-                my $user =
+                my $world =
                   new Sakai::Nakamura::World( \$authn, $nakamura->{'Verbose'},
                     $nakamura->{'Log'} );
-                $user->add_from_file( ${ $config->{'additions'} },
+                $world->add_from_file( ${ $config->{'additions'} },
                     $i, $nakamura->{'Threads'} );
                 exit 0;
             }
@@ -356,7 +364,8 @@ sub run {
     else {
         $authn->login_user();
         if ( defined ${ $config->{'add'} } ) {
-            $world = new Sakai::Nakamura::World( \$authn, $nakamura->{'Verbose'},
+            $world =
+              new Sakai::Nakamura::World( \$authn, $nakamura->{'Verbose'},
                 $nakamura->{'Log'} );
             $success = $world->add(
                 ${ $config->{'add'} },
@@ -368,6 +377,10 @@ sub run {
                 ${ $config->{'world_template'} }
             );
             Apache::Sling::Print::print_result($world);
+        }
+        else {
+            $world->help();
+            return 1;
         }
     }
     return $success;
